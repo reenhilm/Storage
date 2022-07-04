@@ -10,7 +10,9 @@
         <form asp-action="Search">
             <label for="category" class="control-label"></label>
             @Html.DropDownList("category", new SelectList(Model.CategoryList), "Select category", new { @class = "form-control" })
-            <input type="submit" value="testar"/>            
+            <label for="productName" class="control-label"></label>
+            <input type="text" class="form-control" name="productName" />
+            <input type="submit" class="btn btn-primary mt-2 mb-2" value="testar"/>            
         </form>
     </div>
 </div>

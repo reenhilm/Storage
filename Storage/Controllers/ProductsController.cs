@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Storage.Data;
 using Storage.Models;
@@ -86,17 +81,19 @@ namespace Storage.Controllers
             lwm.CategoryList = productCategories;
             return View(lwm);
         }
-
-        public IActionResult Search(string category)
+        public IActionResult Search(string category, string productName)
         {
-            if (category == null)
+            if (category == null && productName == null)
                 return RedirectToAction(nameof(List));
 
             if (_context.Product == null)
                 return NotFound();
 
-            var products = _context.Product
-                .Where(p => p.Category.StartsWith(category))
+            IQueryable<Product> productsQuery = _context.Product.AsQueryable()
+                .WhereIf(category != null, x => x.Category == category)
+                .WhereIf(productName != null, x => x.Name.StartsWith(productName!));
+
+            var products = productsQuery
                 .Select(product =>
                         new ProductViewModel
                         {
