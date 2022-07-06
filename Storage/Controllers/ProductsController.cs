@@ -46,7 +46,7 @@ namespace Storage.Controllers
             return View();
         }
 
-        public IActionResult List()
+        public async Task<IActionResult> List()
         {
             if(_context.Product == null)
                 return NotFound();
@@ -71,9 +71,7 @@ namespace Storage.Controllers
             var lwm = new ListViewModel();
             lwm.ProductList = products;
 
-            var productCategories = _context.Product
-                            .Select(product => product.Category)
-                            .ToList();
+            var productCategories = await GetDistinctProductCategories(_context.Product);
 
             if (productCategories == null)
                 return NotFound();
@@ -81,17 +79,17 @@ namespace Storage.Controllers
             lwm.CategoryList = productCategories;
             return View(lwm);
         }
-        public IActionResult Search(string category, string productName)
+        public async Task<IActionResult> Search(ListViewModel requestModel)
         {
-            if (category == null && productName == null)
+            if (requestModel.Category == null && requestModel.ProductName == null)
                 return RedirectToAction(nameof(List));
 
             if (_context.Product == null)
                 return NotFound();
 
             IQueryable<Product> productsQuery = _context.Product.AsQueryable()
-                .WhereIf(category != null, x => x.Category == category)
-                .WhereIf(productName != null, x => x.Name.StartsWith(productName!));
+                .WhereIf(requestModel.Category != null, x => x.Category == requestModel.Category)
+                .WhereIf(requestModel.ProductName != null, x => x.Name.StartsWith(requestModel.ProductName!));
 
             var products = productsQuery
                 .Select(product =>
@@ -112,19 +110,24 @@ namespace Storage.Controllers
             foreach (ProductViewModel p in products)
                 p.InventoryValue = (p.Price * p.Count);
 
-            var lwm = new ListViewModel();
-            lwm.ProductList = products;
-
-            var productCategories = _context.Product
-                            .Select(product => product.Category)
-                            .ToList();
+            var responseModel = new ListViewModel();
+            responseModel.ProductList = products;
+            List<string> productCategories = await GetDistinctProductCategories(_context.Product);
 
             if (productCategories == null)
                 return NotFound();
 
-            lwm.CategoryList = productCategories;
+            responseModel.CategoryList = productCategories;
 
-            return View(nameof(List), lwm);
+            return View(nameof(List), responseModel);
+        }
+
+        private async Task<List<string>> GetDistinctProductCategories(DbSet<Product>? contextProduct)
+        {
+            return await contextProduct!
+                            .Select(product => product.Category)
+                            .Distinct()
+                            .ToListAsync();
         }
 
         // POST: Products/Create

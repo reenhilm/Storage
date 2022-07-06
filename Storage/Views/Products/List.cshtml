@@ -9,10 +9,17 @@
     <div class="col-md-4">
         <form asp-action="Search">
             <label for="category" class="control-label"></label>
+            @{
+            /*
+            <section class="form-control" name="asdfadsf" asp-items="@Html.GetEnumSelectList<Genre>()">
+                <option selected="selected" value="">Please select</option>
+            </section>
+            */
+            }
             @Html.DropDownList("category", new SelectList(Model.CategoryList), "Select category", new { @class = "form-control" })
-            <label for="productName" class="control-label"></label>
-            <input type="text" class="form-control" name="productName" />
-            <input type="submit" class="btn btn-primary mt-2 mb-2" value="testar"/>            
+            <label asp-for="ProductName" class="control-label"></label>
+            <input type="text" asp-for="ProductName" class="form-control" name="ProductName" />
+            <input type="submit" class="btn btn-primary mt-2 mb-2" value="Search"/>            
         </form>
     </div>
 </div>
